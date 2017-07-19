@@ -1,0 +1,72 @@
+/* MAIN STYLES */
+body {
+  background-color: #F5F5F5 !important;
+}
+
+.ui.sidebar.left {
+    position: fixed;
+    width: 20%;
+}
+
+.ui.main.grid {
+  position: relative;
+  width: 100%;
+}
+
+/* PRODUCTS STYLES */
+.ui.striped.table {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.ui.main.grid .products.column, .ui.main.grid .products.column .basic.segment {
+  padding: 1rem 0;
+}
+
+.ui.divided.product.items {
+  width: 100%;
+}
+
+.ui.divided.product.items img {
+  height: 187px;
+  width: 150px;
+}
+
+/* CUSTOMER STYLES */
+
+.customer.statistics {
+  width: 100%;
+}
+
+.feedback.segments {
+  width: 100%;
+}
+
+/* EMPLOYEES STYLES */
+
+.ui.mobile.cards {
+  display: none;
+}
+
+/* DASHBOARD STYLES */
+
+.ui.dashboard.segment {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 171px;
+}
+
+.ui.dashboard.statistic .value {
+  color: #FFFFFF;
+}
+
+.ui.dashboard.statistic .label {
+  color: #F5F5F5;
+}
+
+.highcharts.column {
+    width: 100% !important;
+    position: relative;
+}
+

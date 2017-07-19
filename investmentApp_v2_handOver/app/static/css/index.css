@@ -1,0 +1,28 @@
+.title{
+	color: yellow;
+	text-decoration: bold;
+	font-size: 1em;
+}
+.nav {
+	width: 100%;
+	float: left;
+	margin: 0 0 3em 0;
+	padding: 0;
+	list-style: none;
+}
+.nav ul {
+	float: left;
+}
+.jumbotron {
+	position:relative;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+    bottom: 25px;
+    background-color: #C9E6FF;
+    margin: 0 auto;
+    height: 100px;
+}
+.button {
+    color: yellow;
+}

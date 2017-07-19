@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>票房分账计算器</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="mobile-web-app-capable" content="yes">
+
+        <!-- build:css styles/vendor.css -->
+        <!-- bower:css -->
+        <link rel="stylesheet" type="text/css" href="/static/Semantic-UI-2.2.0/dist/semantic.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/datatables/css/dataTables.semanticui.min.css">
+        <!-- endbower -->
+        <!-- endbuild 
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,700,300&amp;subset=latin,vietnamese" rel="stylesheet" type="text/css">-->
+
+        <!-- build:css styles/main.css -->
+        <style type="text/css">
+            .ui.toggle.checkbox {
+                margin-bottom: 0px;
+            }
+            
+            /*parameter setting background color*/
+            .ui.form {
+                background-color: #ECEEEB;
+                padding: 25px;
+            }
+        </style>
+        <!-- endbuild -->
+        
+        <script src="/static/js/jquery-latest.js"></script>
+        <script src="/static/Semantic-UI-2.2.0/dist/semantic.min.js"></script>
+        <script src="/static/datatables/js/jquery.dataTables.min.js"></script>
+        <script src="/static/datatables/js/dataTables.semanticui.min.js"></script>
+        <script src="/static/highcharts/js/highcharts.js"></script>
+        <script src="/static/highcharts/js/modules/drilldown.js"></script>
+        <script src="/static/highcharts/js/modules/data.js"></script>
+        <script src="/static/highcharts/js/modules/exporting.js"></script>
+        <script src="/static/js/numeral.js"></script>
+        <script type="text/javascript">
+            $('.ui.checkbox')
+              .checkbox()
+            ;
+            
+            //ui popup
+            
+            //propaganda_wepiao_checkbox checkbox onchange pop up
+            $('#propaganda_wepiao_checkbox')
+              .popup({
+                popup : $('.ui.popup.propaganda'),
+                on    : 'click'
+              })
+            ;
+            
+            //table setting
+            $(document).ready(function() {
+                //for table
+                $('#return_table').DataTable({
+                    "scrollX": true,
+                    "scrollCollapse": true,
+                    "autoWidth": false,
+                    "scrollY": "600px",
+                    "paging": true,
+                    "fixedHeader": {
+                        "header": false
+                    },
+                    "searching": false,
+                    "sScrollX": "100%",
+                    "sScrollXInner": "350%",
+                });
+
+            } );
+            /*
+                    "columnDefs": [
+                        { 'width': '20px', 'target': 0}, 
+                        { 'width': '20px', 'target': 1}, 
+                        { 'width': '20px', 'target': 2}, 
+                        { 'width': '20px', 'target': 3}, 
+                        { 'width': '20px', 'target': 4}, 
+                        { 'width': '20px', 'target': 5}, 
+                        { 'width': '20px', 'target': 6}, 
+                        { 'width': '20px', 'target': 7}, 
+                        { 'width': '20px', 'target': 8}, 
+                        { 'width': '20px', 'target': 9}, 
+                        { 'width': '20px', 'target': 10}, 
+                        { 'width': '20px', 'target': 11}, 
+                        { 'width': '20px', 'target': 12}, 
+                        { 'width': '20px', 'target': 13}, 
+                        { 'width': '20px', 'target': 14}, 
+                        { 'width': '20px', 'target': 15}, 
+                        { 'width': '20px', 'target': 16}, 
+                        { 'width': '20px', 'target': 17}, 
+                        { 'width': '20px', 'target': 18}, 
+                        { 'width': '20px', 'target': 19}, 
+                    ]
+            */
+            
+            
+            //calculate even boxoffice for movie and wepiao, respectively
+            //check between 0 and 100
+        </script>
+    </head>
+    <body>
+        <nav class="ui menu inverted navbar page grid" style="margin-bottom: 0px">
+            <a href="" class="brand item">票房分账计算器</a>
+        </nav>
+        <br>
+        <div class="ui page grid">
+            <div class="row">
+                <div class="column padding-reset">
+                    <form class="ui fluid form inline" id="return_form">
+                        <h2 class="ui blue header">
+                            参数设置
+                        </h2>
+                        <div class="ui error message"></div>
+                        <h4 class="ui dividing header">影片总体</h4>
+                        <div class="fields">
+                            <div class="field">
+                                <label>专资办基金比例(%)</label>  
+                                <input id="zzbPercentage" name="zzbPercentage" type="text" value="5" class="percentage">
+                            </div>
+                            <div class="field">
+                                <label>增值税比例(%)</label>  
+                                <input id="taxPercentage" name="taxPercentage" type="text" value="6" class="percentage">
+                            </div>
+                            <div class="field">
+                                <label>分账比例(%)
+                                    <i class="add circle icon" onclick="ShowLadderModal();"></i>
+                                </label>
+                                <input id="boxPercentage" name="boxPercentage" type="text" value="43" class="percentage">
+                            </div>
+                            <div class="field">
+                                <label>发行代理费比例(%)<i class="add circle icon" onclick="ShowLadderModal();"></i></label>
+                                <input id="proxyPercentage" name="proxyPercentage" type="text" value="10" class="percentage">
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>影片宣发预算(单位：万)</label>  
+                                <input id="propaganda" name="propaganda" type="text" value="0" class="number" onchange="automaticCalculate('propaganda_wepiao', 'propagandaPercentage_wepiao', 'propaganda', 'propaganda_wepiao_checkbox')">
+                            </div>
+                            <div class="field">
+                                <label>影片制作成本(单位：万)</label>  
+                                <input id="production" name="production" type="text" value="0" class="number" onchange="automaticCalculate('production_wepiao', 'productionPercentage_wepiao', 'production', 'production_wepiao_checkbox')">
+                            </div>
+                            <div class="field">
+                                <label>主创分红比例(%)</label>  
+                                <input id="castsPercentage" name="castsPercentage" type="text" value="0" class="percentage">
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>影片附加版权收入（万）<i class="add circle icon" onclick="ShowLadderModal();"></i></label>  
+                                <input id="copyrightIncome" name="copyrightIncome" type="text" value="0" class="number" onChange="CalculateCopyrightIncome_wepiao();">
+                            </div>
+                            <div class="field">
+                                <label>版权代理费比例%</label>  
+                                <input id="copyrightProxyPercentage" name="copyrightProxyPercentage" type="text" value="0" class="number" onChange="CalculateCopyrightIncome_wepiao();">
+                            </div>
+                            <div class="field">
+                                <label>影片其他成本（如中影、华夏押金等）<i class="add circle icon" onclick="ShowLadderModal();"></i></label>  
+                                <input id="depositCost" name="depositCost" type="text" value="0" class="number">
+                            </div>
+                        </div>
+                        <h4 class="ui dividing header">微影</h4>
+                        <div class="fields">
+                            <div class="field">
+                                <label>微影发行代理费比例(%)<i class="add circle icon" onclick="ShowLadderModal();"></i></label>  
+                                <input id="proxyPercentage_wepiao" name="proxyPercentage_wepiao" type="text" value="0" class="percentage">
+                            </div>
+                            <!--
+                            <div class="field">
+                                <label>微影其他成本（如中影、华夏押金等）<i class="add circle icon" onclick="ShowLadderModal();"></i></label>  
+                                <input id="depositCost_wepiao" name="depositCost_wepiao" type="text" value="0" class="number">
+                            </div>
+                            -->
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>微影宣发占比(%)</label>  
+                                <input id="propagandaPercentage_wepiao" name="propagandaPercentage_wepiao" type="text" value="0" class="percentage" onchange="automaticCalculate('propaganda_wepiao', 'propagandaPercentage_wepiao', 'propaganda', 'propaganda_wepiao_checkbox')">
+                            </div>
+                            <div class="field">
+                                <label>微影宣发成本(单位：万)</label>  
+                                <input id="propaganda_wepiao" name="propaganda_wepiao" type="text" value="0" class="number" onchange="automaticCalculate('propagandaPercentage_wepiao', 'propaganda_wepiao', 'propaganda', 'propaganda_wepiao_checkbox', calculate_num = false)">
+                            </div>
+                            <div class="field">
+                                <label>微影宣发是否溢价(默认无溢价)</label>
+                                <div class="ui toggle checkbox">
+                                    <input type="checkbox" tabindex="0" id="propaganda_wepiao_checkbox" name="propaganda_wepiao_checkbox" class="wepiao checkbox">
+                                    <label for="propaganda_wepiao_checkbox">溢价</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>微影制作投资占比(%)</label>  
+                                <input id="productionPercentage_wepiao" name="productionPercentage_wepiao" type="text" value="0" class="percentage" onchange="automaticCalculate('production_wepiao', 'productionPercentage_wepiao', 'production', 'production_wepiao_checkbox'); CalculateCopyrightIncome_wepiao();">
+                            </div>
+                            <div class="field">
+                                <label>微影制作成本(单位：万)</label>  
+                                <input id="production_wepiao" name="production_wepiao" type="text" value="0" class="number" onchange="automaticCalculate('productionPercentage_wepiao', 'production_wepiao', 'production', 'production_wepiao_checkbox', calculate_num = false)">
+                            </div>
+                            <div class="field">
+                                <label>微影制作投资是否溢价(默认无溢价)</label>
+                                <div class="ui toggle checkbox">
+                                    <input type="checkbox" tabindex="0" id="production_wepiao_checkbox" name="production_wepiao_checkbox" class="wepiao checkbox">
+                                    <label>溢价</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>微影版权代理费比例%</label>  
+                                <input id="copyrightProxyPercentage_wepiao" name="copyrightProxyPercentage_wepiao" type="text" value="0" class="number" onChange="CalculateCopyrightIncome_wepiao();">
+                            </div>
+                            <div class="field">
+                                <label>微影附加版权收入（万）<i class="add circle icon" onclick="ShowLadderModal();"></i></label>  
+                                <input id="copyrightIncome_wepiao" name="copyrightIncome_wepiao" type="text" value="0" class="number">
+                            </div>
+                            <div class="field">
+                                <label>自定义微影附加版权收入</label>
+                                <div class="ui toggle checkbox">
+                                    <input type="checkbox" tabindex="0" id="copyrightIncome_wepiao_checkbox" name="copyrightIncome_wepiao_checkbox" class="wepiao checkbox" onChange="CalculateCopyrightIncome_wepiao();">
+                                    <label>自定义</label>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="field">
+                                <label>微影额外奖励收入比例(%)<i class="add circle icon" onclick="ShowLadderModal();"></i></label>  
+                                <input id="bonusPercentage_wepiao" name="bonusPercentage_wepiao" type="text" value="0" class="percentage">
+                            </div>
+                            -->
+                        </div>
+                        
+                        <div class="ui hidden divider"></div>
+                        <input class="ui blue submit button" id="submit" name="submit" type="submit" value="生成图表">
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Dynamically adding inputs -->
+        <div class="ui page grid">
+            <div class="one column row">
+                <div class="column">
+                    <div class="ui ladder modal">
+                        <i class="close icon"></i>
+                        <div class="header">票房阶梯参数</div>
+                        <div class="content">
+                            <form class="ui fluid form inline ladder_form" id="boxPercentage_ladder">
+                                <div class="ui error message"></div>
+                                <h4 class="ui dividing header">票房分账比例(%)<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='boxPercentage_dynamic_anchor', name='票房分账比例(%)', num_id='boxPercentage_ladder_number', new_id_name='boxPercentage_ladder_field', class_type='percentage');"></i></h4>
+
+                                <!-- Dynamic inputs for adding and removing -->
+                                <div id="boxPercentage_dynamic">
+                                    <div id="boxPercentage_dynamic_anchor"></div>
+                                    <input id="boxPercentage_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="boxPercentage_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_boxPercentage_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>分账比例%</label>
+                                            <input type="text" value="0" class="percentage" name="input_interested_boxPercentage_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="proxyPercentage_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">影片整体发行代理费比例(%)<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='proxyPercentage_dynamic_anchor', name='发行代理费比例(%)', num_id='proxyPercentage_ladder_number', new_id_name='proxyPercentage_ladder_field', class_type='percentage');"></i></h4>
+                                <!-- Dynamic inputs for adding and removing -->
+                                <div id="proxyPercentage_dynamic">
+                                    <div id="proxyPercentage_dynamic_anchor"></div>
+                                    <input id="proxyPercentage_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="proxyPercentage_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_proxyPercentage_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>发行代理费比例%</label>
+                                            <input type="text" value="0" class="percentage" name="input_interested_proxyPercentage_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="copyrightIncome_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">影片其他收入（如版权，单位：万）<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='copyrightIncome_dynamic_anchor', name='影片其他收入(万)', num_id='copyrightIncome_ladder_number', new_id_name='copyrightIncome_ladder_field', class_type='number');"></i></h4>
+
+                                <!-- Dynamic inputs for adding and removing -->
+                                <div id="copyrightIncome_dynamic">
+                                    <div id="copyrightIncome_dynamic_anchor"></div>
+                                    <input id="copyrightIncome_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="copyrightIncome_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_copyrightIncome_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>影片其他收入（万）</label>
+                                            <input type="text" value="0" class="number" name="input_interested_copyrightIncome_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="depositCost_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">影片其他成本（如中影、华夏押金，单位：万）<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='depositCost_dynamic_anchor', name='影片其他成本（万）', num_id='depositCost_ladder_number', new_id_name='depositCost_ladder_field', class_type='number');"></i></h4>
+
+                                <!-- Dynamic inputs for adding and removing -->
+                                <div id="depositCost_dynamic">
+                                    <div id="depositCost_dynamic_anchor"></div>
+                                    <input id="depositCost_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="depositCost_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_depositCost_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>影片其他成本（万）</label>
+                                            <input type="text" value="0" class="number" name="input_interested_depositCost_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="proxyPercentage_wepiao_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">微影发行代理费比例(%)<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='proxyPercentage_wepiao_dynamic_anchor', name='微影发行代理费比例(%)', num_id='proxyPercentage_wepiao_ladder_number', new_id_name='proxyPercentage_wepiao_ladder_field', class_type='percentage');"></i></h4>
+                                <!-- Dynamic inputs for adding and removing -->
+                                <div id="proxyPercentage_wepiao_dynamic">
+                                    <div id="proxyPercentage_wepiao_dynamic_anchor"></div>
+                                    <input id="proxyPercentage_wepiao_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="proxyPercentage_wepiao_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_proxyPercentage_wepiao_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>微影发行代理费比例%</label>
+                                            <input type="text" value="0" class="percentage" name="input_interested_proxyPercentage_wepiao_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="copyrightIncome_wepiao_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">微影其他收入（如版权，单位：万）<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='copyrightIncome_wepiao_dynamic_anchor', name='微影其他收入（万）', num_id='copyrightIncome_wepiao_ladder_number', new_id_name='copyrightIncome_wepiao_ladder_field', class_type='number');"></i></h4>
+                                <!-- Dynamic inputs for adding and removing -->
+                                <div id="copyrightIncome_wepiao_dynamic">
+                                    <div id="copyrightIncome_wepiao_dynamic_anchor"></div>
+                                    <input id="copyrightIncome_wepiao_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="copyrightIncome_wepiao_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_copyrightIncome_wepiao_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>微影其他收入（万）</label>
+                                            <input type="text" value="0" class="number" name="input_interested_copyrightIncome_wepiao_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <!-- 
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="depositCost_wepiao_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">微影其他成本（如中影、华夏押金，单位：万）<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='depositCost_wepiao_dynamic_anchor', name='微影其他成本（万）', num_id='depositCost_wepiao_ladder_number', new_id_name='depositCost_wepiao_ladder_field', class_type='number');"></i></h4>
+                                <div id="depositCost_wepiao_dynamic">
+                                    <div id="depositCost_wepiao_dynamic_anchor"></div>
+                                    <input id="depositCost_wepiao_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="depositCost_wepiao_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_depositCost_wepiao_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>微影其他成本（万）</label>
+                                            <input type="text" value="0" class="number" name="input_interested_depositCost_wepiao_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ui hidden divider"></div>
+                            <form class="ui fluid form inline ladder_form" id="bonusPercentage_wepiao_ladder" class="ladder_form">
+                                <h4 class="ui dividing header">微影额外奖励收入比例(%)<i class="add circle icon" onClick="LadderDynamic_boxofficePercentage(anchor='bonusPercentage_wepiao_dynamic_anchor', name='微影额外奖励比例%', num_id='bonusPercentage_wepiao_ladder_number', new_id_name='bonusPercentage_wepiao_ladder_field', class_type='percentage');"></i></h4>
+                                
+                                <div id="bonusPercentage_wepiao_dynamic">
+                                    <div id="bonusPercentage_wepiao_dynamic_anchor"></div>
+                                    <input id="bonusPercentage_wepiao_ladder_number" type="hidden" value="0" class="number">
+                                    <div class="fields" id="bonusPercentage_wepiao_ladder_field_0">
+                                        <div class="field">
+                                            <label>票房下限(单位：万)</label>  
+                                            <input type="text" value="0" class="number highest" name="input_highest_bonusPercentage_wepiao_ladder_field_0">
+                                        </div>
+                                        <div class="field">
+                                            <label>微影额外奖励比例%</label>
+                                            <input type="text" value="0" class="percentage" name="input_interested_bonusPercentage_wepiao_ladder_field_0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            -->
+                        </div>
+                        <!--
+                        <div class="actions">
+                            <div class="ui button approve green">保存</div>
+                            <div class="ui button approve red">清空</div>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="result_content_div" style="display: none;">
+            <div class="ui hidden divider"></div>
+            <!-- Exporting button area -->
+            <div class="ui page grid">
+                <div class="one column row">
+                    <div class="column">
+                        <a id="exportCalculator">
+                            <div class="ui button disabled" tabindex="0" id="exportCalculator_button">
+                                <div class="visible content">导出收益表格</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="ui hidden divider"></div>
+            <div class="ui page grid">
+                <div class="two column row">
+                    <div class="column">
+                        <div class="ui raised left aligned segment">
+                            <a class="ui green ribbon label">微影（发行+投资）盈亏情况</a>
+                            <div class="ui divided selection list">
+                                <a class="item">
+                                    <div class="ui horizontal label">盈亏票房(万)</div>
+                                    <div class="right floated content">
+                                        <span id="boxoffice_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui green header">收入构成</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影发行代理费(万)</div>
+                                    <div class="right floated content">
+                                        <span id="proxyIncome_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影宣发回收(万)</div>
+                                    <div class="right floated content">
+                                        <span id="propagandaIncome_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影制作成本回收&利润(万)</div>
+                                    <div class="right floated content">
+                                        <span id="productionIncome_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影其他收入(万)</div>
+                                    <div class="right floated content">
+                                        <span id="copyrightIncome_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影总收入(万)</div>
+                                    <div class="right floated content">
+                                        <span id="totalIncome_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui red header">成本构成</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影垫付宣发(万)</div>
+                                    <div class="right floated content">
+                                        <span id="propagandaCost_wepiao_even_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影投资成本(万)</div>
+                                    <div class="right floated content">
+                                        <span id="productionCost_wepiao_even_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影总成本(万)</div>
+                                    <div class="right floated content">
+                                        <span id="totalCost_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui green header">利润&回报率</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影利润(万)</div>
+                                    <div class="right floated content">
+                                        <span id="profit_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影回报率(%)</div>
+                                    <div class="right floated content_wepiao">
+                                        <span id="return_even_wepiao_combined"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ui hidden divider"></div>
+            <div class="ui page grid">
+                <div class="two column row">
+                    <div class="column">
+                        <div class="ui raised left aligned segment">
+                            <a class="ui blue ribbon label">微影（仅投资）盈亏情况</a>
+                            <div class="ui divided selection list">
+                                <a class="item">
+                                    <div class="ui horizontal label">盈亏票房(万)</div>
+                                    <div class="right floated content">
+                                        <span id="boxoffice_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                <h4 class="ui green header">收入构成</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">制作成本回收&利润(万)</div>
+                                    <div class="right floated content">
+                                        <span id="productionIncome_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">其他收入(万)</div>
+                                    <div class="right floated content">
+                                        <span id="copyrightIncome_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">总收入(万)</div>
+                                    <div class="right floated content">
+                                        <span id="totalIncome_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui red header">成本构成</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">制作成本投入(万)</div>
+                                    <div class="right floated content">
+                                        <span id="productionCost_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui green header">利润&回报率</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">利润(万)</div>
+                                    <div class="right floated content">
+                                        <span id="profit_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">回报率(%)</div>
+                                    <div class="right floated content">
+                                        <span id="return_even_wepiao_production"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="ui raised left aligned segment">
+                            <a class="ui blue ribbon label">微影（仅发行）盈亏情况</a>
+                            <div class="ui divided selection list">
+                                <a class="item">
+                                    <div class="ui horizontal label">盈亏票房(万)</div>
+                                    <div class="right floated content">
+                                        <span id="boxoffice_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui green header">收入构成</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影发行代理费(万)</div>
+                                    <div class="right floated content">
+                                        <span id="proxyIncome_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影宣发回收(万)</div>
+                                    <div class="right floated content">
+                                        <span id="propagandaIncome_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影总收入(万)</div>
+                                    <div class="right floated content">
+                                        <span id="totalIncome_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui red header">成本构成</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影垫付宣发(万)</div>
+                                    <div class="right floated content">
+                                        <span id="propagandaCost_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <h4 class="ui green header">利润&回报率</h4>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影利润(万)</div>
+                                    <div class="right floated content">
+                                        <span id="profit_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                                <a class="item">
+                                    <div class="ui horizontal label">微影回报率(%)</div>
+                                    <div class="right floated content_wepiao">
+                                        <span id="return_even_wepiao_propaganda"><strong>N/A</strong></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The graph -->
+            <div class="ui hidden divider"></div>
+            <div class="ui page grid">
+                <div class="one column row">
+                    <div class="column">
+                        <div id="graph" style="min-width: 900px; min-height: 600px; margin: 0 auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The table -->
+            <div class="ui hidden divider"></div>
+            <div class="ui page grid">
+                <div class="one column row">
+                    <div class="column">
+                        <table class="ui striped table" id="return_table">
+                            <thead>
+                                <tr>
+                                    <th>总票房(万)</th>
+                                    <th>净票房(万)</th>
+                                    <th>影片其他成本(如押金,万)</th>
+                                    <th>发行收入(万)</th>
+                                    <th>发行代理费(万)</th>
+                                    <th>净发行收入(万)</th>
+                                    <th>宣发成本(万)</th>
+                                    <th>制作成本(万)</th>
+                                    <th>影片利润(万)</th>
+                                    <th>主创分红(万)</th>
+                                    <th>待投资方分配利润(万)</th>
+                                    <th>影片其他收入(万)</th>
+                                    <th>影片投资方总收入(万)</th>
+                                    <th>影片投资方利润(万)</th>
+                                    <th>影片投资方回报率(%)</th>
+                                    <th></th>
+                                    <th>微影发行代理收入(万)</th>
+                                    <th>微影宣发回收(万)</th>
+                                    <th>微影制作回收&利润(万)</th>
+                                    <th>微影其他收入(万)</th>
+                                    <th>微影总收入(万)</th>
+                                    <th>微影宣发成本(万)</th>
+                                    <th>微影制作成本(万)</th>
+                                    <th>微影总成本(万)</th>
+                                    <th>微影利润(万)</th>
+                                    <th>微影回报率(%)</th>
+                                    <th></th>
+                                    <th>微影发行代理收入(仅发行,万)</th>
+                                    <th>微影宣发回收(仅发行,万)</th>
+                                    <th>微影总收入(仅发行,万)</th>
+                                    <th>微影总成本(仅发行,万)</th>
+                                    <th>微影利润(仅发行,万)</th>
+                                    <th>微影回报率(仅发行,%)</th>
+                                    <th></th>
+                                    <th>微影发行代理收入(仅投资,万)</th>
+                                    <th>微影宣发回收(仅投资,万)</th>
+                                    <th>微影总收入(仅投资,万)</th>
+                                    <th>微影总成本(仅投资,万)</th>
+                                    <th>微影利润(仅投资,万)</th>
+                                    <th>微影回报率(仅投资,%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br><br><br><br><br>
+        
+        <!-- script area -->
+        <script type="text/javascript">
+            //percentage must be between 0 and 100
+            $.fn.form.settings.rules.PercentageRange = function (inputValue, validationValue) {
+                //console.log(inputValue);
+                //console.log(validationValue);
+                //console.log(JSON.parse(validationValue)[0]);
+                return (inputValue >= JSON.parse(validationValue)[0]) && (inputValue <= JSON.parse(validationValue)[1]);
+            }
+            
+            //check when checkbox is cancelled
+            $.fn.form.settings.rules.CheckcheckBox = function (inputValue, validationValue) {
+                //see if checkbox is checked 
+                var checkbox = $("#" + validationValue).prop('checked');
+                if (checkbox){
+                    return true;
+                } else if (validationValue == 'copyrightIncome_wepiao_checkbox'){
+                    return true;
+                }
+                else {
+                    console.log(validationValue);
+                    //replace str in validationValue
+                    validationValue = validationValue.replace('_wepiao_checkbox','');
+                    console.log(validationValue);
+                    
+                    //get film value
+                    var film = +$("#" + validationValue).val();
+                    //get wepiao percentage
+                    var wepiao_percentage = +$("#" + validationValue + 'Percentage_wepiao').val();
+                    var wepiao = +$("#" + validationValue + '_wepiao').val();
+                    console.log(film, wepiao_percentage, wepiao);
+                    
+                    if ((film * wepiao_percentage / 100 < wepiao + 0.001) && (film * wepiao_percentage / 100 > wepiao - 0.001)){
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            
+            
+            //check if proxyPercentage_wepiao is less than proxyPercentage
+            $.fn.form.settings.rules.LessThanFilmProxy = function (inputValue, validationValue) {
+                //get proxyPercentageValue
+                proxyPercentageValue = JSON.parse(document.getElementById('proxyPercentage').value);
+                if (inputValue <= proxyPercentageValue){
+                    return true;
+                }else {
+                    return false;
+                }                      
+            }
+            $.fn.form.settings.rules.LessThanFilmCopyrightProxy = function (inputValue, validationValue) {
+                //get proxyPercentageValue
+                proxyPercentageValue = JSON.parse(document.getElementById('copyrightProxyPercentage').value);
+                if (inputValue <= proxyPercentageValue){
+                    return true;
+                }else {
+                    return false;
+                }                      
+            }
+            
+            
+            //generate rules for fileds when validating forms
+            function generateFieldRules(){
+                //percentage fields
+                var form = document.getElementById('return_form');
+                var percentage_fields = form.getElementsByClassName('percentage');
+                var number_fields = form.getElementsByClassName('number');
+                var checkbox_fields = form.getElementsByClassName('wepiao checkbox');
+                
+                //initialize field_rules
+                field_rules = {};
+                
+                //loop over percentage_fields and add field validation rules into field_rules
+                for (var i = 0; i < percentage_fields.length; i++){
+                    console.log(percentage_fields[i]['name']);
+                    field_rules[percentage_fields[i]['name']] = {
+                        identifier: percentage_fields[i]['name'],
+                        rules: [{
+                            type: 'number', 
+                            prompt: '{name}必须为数字格式'
+                        },{
+                            type: 'PercentageRange[[0,100]]', 
+                            prompt: '{name}只能介于0-100'
+                        }, {
+                            type: 'empty',
+                            prompt: '{name}不能为空'
+                        }]
+                    };
+                }
+                
+                //loop over number_fields and add field validation rules into field_rules
+                for (var i = 0; i < number_fields.length; i++){
+                    console.log(number_fields[i]['name']);
+                    field_rules[number_fields[i]['name']] = {
+                        identifier: number_fields[i]['name'],
+                        rules: [{
+                            type: 'number', 
+                            prompt: '{name}必须为数字格式'
+                        },{
+                            type: 'PercentageRange[[0,100000000000]]', 
+                            prompt: '{name}必须大于等于0'
+                        }, {
+                            type: 'empty',
+                            prompt: '{name}不能为空'
+                        }]
+                    };
+                }
+                
+                //loop over checkbox_fields and add field validation rules into field_rules
+                for (var i = 0; i < checkbox_fields.length; i++){
+                    console.log(checkbox_fields[i]['name']);
+                    field_rules[checkbox_fields[i]['name']] = {
+                        identifier: checkbox_fields[i]['name'],
+                        rules: [{
+                            type: 'CheckcheckBox[' + checkbox_fields[i]['name'] + ']', 
+                            prompt: '影片总成本、微影成本和微影成本占比不匹配,请前往修改对应成本或者比例.修改后忽略本条错误即可'
+                        }]
+                    };
+                }
+                
+                
+                //proxyPercentage_wepiao must be less thzn or equal to proxyPercentage
+                field_rules['proxyPercentage_wepiao'] = {
+                    identifier: 'proxyPercentage_wepiao',
+                    rules: [{
+                        type: 'LessThanFilmProxy',
+                        prompt: '微影的发行代理费比例必须小于等于影片总体的发行代理费比例'
+                    }]
+                }
+                //proxyPercentage_wepiao must be less thzn or equal to proxyPercentage
+                field_rules['copyrightProxyPercentage_wepiao'] = {
+                    identifier: 'copyrightProxyPercentage_wepiao',
+                    rules: [{
+                        type: 'LessThanFilmCopyrightProxy',
+                        prompt: '微影的附加版权发行代理费比例必须小于等于影片总体的附加版权发行代理费比例'
+                    }]
+                }
+                
+                //console.log(field_rules);
+                return field_rules;
+            }
+            
+            
+            //automatically calculate propaganda_wepiao, etc
+            //propagandaPercentage_wepiao
+            function automaticCalculate(key_output, key_input1, key_input2, key_checkbox, calculate_num = true){
+                //get propaganda value
+                //console.log(key_output, key_input1, key_input2, key_checkbox);
+                
+                //var propaganda = +$(key_1).val();
+                var propaganda = +$("#" + key_input1).val();
+                //console.log(propaganda);
+                
+                //get propagandaPercentage_wepiao value
+                var propagandaPercentage_wepiao = +$("#" + key_input2).val();
+                //var propagandaPercentage_wepiao = +$("#propagandaPercentage_wepiao").val();
+                
+                //get propaganda_wepiao_checkbox value
+                //console.log($("#propaganda_wepiao_checkbox").val());
+                var propaganda_wepiao_checkbox = $("#" + key_checkbox).prop('checked');
+                //var propaganda_wepiao_checkbox = $("#propaganda_wepiao_checkbox").prop('checked');
+                
+                //see if propaganda_wepiao_checkbox is checked
+                //$("#result").val(val1+val2);
+                
+                if (calculate_num) {
+                    if ((!propaganda_wepiao_checkbox) && (!isNaN(parseFloat(propaganda))) && (!isNaN(parseFloat(propagandaPercentage_wepiao)))){
+                        $("#" + key_output).val(propaganda * propagandaPercentage_wepiao / 100);
+                    } else if ((isNaN(parseFloat(propaganda)) || isNaN(parseFloat(propagandaPercentage_wepiao))) && (!propaganda_wepiao_checkbox)){
+                        $("#" + key_output).val(0);
+                    }
+                    else {
+                        console.log('既然溢价，我们就默认这两个东西由您自己来填写喽!');
+                        console.log(propaganda_wepiao_checkbox);
+                        console.log(isNaN(parseFloat(propaganda)));
+                        console.log(isNaN(parseFloat(propagandaPercentage_wepiao)));
+                    } 
+                } else {
+                    //calculate percentage
+                    if ((!propaganda_wepiao_checkbox) && (!isNaN(parseFloat(propaganda))) && (!isNaN(parseFloat(propagandaPercentage_wepiao)))){
+                        $("#" + key_output).val((100 * propaganda) / propagandaPercentage_wepiao);
+                    } else if ((isNaN(parseFloat(propaganda)) || isNaN(parseFloat(propagandaPercentage_wepiao))) && (!propaganda_wepiao_checkbox)){
+                        $("#" + key_output).val(0);
+                    }
+                    else {
+                        console.log('既然溢价，我们就默认这两个东西由您自己来填写喽!');
+                        console.log(propaganda_wepiao_checkbox);
+                        console.log(isNaN(parseFloat(propaganda)));
+                        console.log(isNaN(parseFloat(propagandaPercentage_wepiao)));
+                    } 
+                }
+            }
+            //for propaganda_wepiao
+            //$("#propagandaPercentage_wepiao").keyup();
+            //automaticCalculate("propaganda_wepiao", "propagandaPercentage_wepiao", "propaganda", "propaganda_wepiao_checkbox");
+            
+            
+            //calculate copyrightIncome_wepiao from copyrightIncome, copyrightProxyPercentage and copyrightProxyPercentage_wepiao
+            function CalculateCopyrightIncome_wepiao () {
+                //get copyrightIncome
+                var copyrightIncome =  +$("#copyrightIncome").val();
+                var copyrightProxyPercentage = +$("#copyrightProxyPercentage").val();
+                var copyrightProxyPercentage_wepiao = +$("#copyrightProxyPercentage_wepiao").val();
+                var productionPercentage_wepiao = +$("#productionPercentage_wepiao").val();
+                var copyrightIncome_wepiao_checkbox = $("#copyrightIncome_wepiao_checkbox").prop('checked');
+                
+                if (!copyrightIncome_wepiao_checkbox && !isNaN(parseFloat(copyrightIncome)) && !isNaN(parseFloat(copyrightProxyPercentage)) && !isNaN(parseFloat(copyrightProxyPercentage_wepiao)) && !isNaN(parseFloat(productionPercentage_wepiao))) {
+                    $("#copyrightIncome_wepiao").val(copyrightIncome * (1 - copyrightProxyPercentage / 100) * productionPercentage_wepiao / 100 + copyrightIncome * copyrightProxyPercentage_wepiao / 100);
+                } else if (!copyrightIncome_wepiao_checkbox) {
+                    $("#copyrightIncome_wepiao").val(0);
+                } else {
+                    console.log('尽情自定义吧');
+                }
+                
+            }
+            
+            
+            
+            //for ajax form submission
+            $.fn.serializeObject = function()
+            {
+                var o = {};
+                var a = this.serializeArray();
+                $.each(a, function() {
+                    if (o[this.name] !== undefined) {
+                        if (!o[this.name].push) {
+                            o[this.name] = [o[this.name]];
+                        }
+                        o[this.name].push(this.value || '');
+                    } else {
+                        o[this.name] = this.value || '';
+                    }
+                });
+                return o;
+            };
+            
+            //firstly, we set form validation
+            $('#return_form').form({
+                on: 'blur',
+                inline: true,
+                fields: generateFieldRules(),
+            })
+            ;
+            
+            
+            //Well, now we also have to add check rules for various ladder forms
+            //boxPercentage_ladder
+            //#step 0: build up various rules
+            //sort array of objects
+            function sortByKey(array, key) {
+                return array.sort(function(a, b) {
+                    var x = a[key]; var y = b[key];
+                    return x > y ? 1 : 0;
+                });
+            }
+            //people = sortByKey(people, 'name');
+            
+            //check if proxyPercentage_wepiao is less than proxyPercentage
+            $.fn.form.settings.rules.BoxofficeRangeValidate_higher = function (inputValue, validationValue) {
+                //get range higher value
+                var lowerValue_element = document.getElementsByName(validationValue)[0];
+                if (lowerValue_element == null)
+                    return true;
+                var lowerValue = JSON.parse(lowerValue_element.value);
+                //console.log(lowerValue);
+                
+                if (inputValue > lowerValue){
+                    return true;
+                }else {
+                    return false;
+                }                      
+            }
+            //highest
+            $.fn.form.settings.rules.BoxofficeRangeValidate_highest = function (inputValue, validationValue) {
+                //get range higher value
+                //console.log(validationValue);
+                var fields_div = document.getElementById(validationValue);
+                var higher_count = 0;
+                
+                if (fields_div != null) {
+                    var fields_div_parentNode = fields_div.parentNode;
+                    var boxofficeRange_lower = fields_div_parentNode.getElementsByClassName('boxofficeRange lower');
+                    var boxofficeRange_higher = fields_div_parentNode.getElementsByClassName('boxofficeRange higher');
+                    
+                    for (var i = 0; i < boxofficeRange_lower.length; i++){
+                        console.log(boxofficeRange_lower[i].value);
+                        if (inputValue <= Number(boxofficeRange_lower[i].value)){
+                            higher_count += 1;
+                        }
+                    }
+                    for (var i = 0; i < boxofficeRange_higher.length; i++){
+                        console.log(boxofficeRange_higher[i].value);
+                        if (inputValue <= Number(boxofficeRange_higher[i].value)){
+                            higher_count += 1;
+                        }
+                    }
+                    
+                    //for check range continuation
+                    var fields_array = [];
+                    var fields_fields = fields_div_parentNode.getElementsByClassName('fields');
+
+                    for (var j = 0; j < fields_fields.length; j++) {
+                        if (fields_fields[j].getElementsByClassName('boxofficeRange lower').length > 0){
+                            fields_array.push({
+                                'lower': Number(fields_fields[j].getElementsByClassName('boxofficeRange lower')[0].value),
+                                'higher': Number(fields_fields[j].getElementsByClassName('boxofficeRange higher')[0].value)
+                            });
+                        } else {
+                            fields_array.push({
+                                'lower': Number(fields_fields[j].getElementsByClassName('highest')[0].value),
+                                'higher': Number(fields_fields[j].getElementsByClassName('highest')[0].value)
+                            });
+                        }
+                    }
+                    //sort the array
+                    //console.log(fields_array);
+                    fields_array = sortByKey(fields_array, 'lower');
+                    //console.log(fields_array);
+                }
+                highest_marker = true;
+                continuation_marker = true;
+                
+                if (higher_count > 1) {
+                    highest_marker = false;
+                }
+                
+                //check the range continuation
+                for (var i = 0; i < fields_array.length; i++) {
+                    if (i == 0){
+                        if (fields_array[i].lower != 0){
+                            continuation_marker = false;
+                            console.log(i, 'false');
+                        }
+                    } else if ( i == fields_array.length - 1 && i > 0){
+                        if (fields_array[i].lower != fields_array[i-1].higher || fields_array[i].lower != fields_array[i-1].higher){
+                            continuation_marker = false;
+                            console.log(i, 'false');
+                        }
+                    } else if ( i > 0) {
+                        if (fields_array[i].lower != fields_array[i-1].higher){
+                            continuation_marker = false;
+                            console.log(i, 'false');
+                        }
+                    }
+                }
+                
+                console.log(highest_marker, continuation_marker);
+                console.log(inputValue, validationValue, higher_count, fields_array);
+                
+                return highest_marker && continuation_marker;
+            }
+            //
+            
+            
+            
+            //#step 1: build up validation rules for ladder forms
+            function generateFieldRules_ladder(form_id){
+                //percentage fields
+                var form = document.getElementById(form_id);
+                var percentage_fields = form.getElementsByClassName('percentage');
+                var number_fields = form.getElementsByClassName('number');
+                
+                //initialize field_rules
+                field_rules = {};
+                
+                //loop over percentage_fields and add field validation rules into field_rules
+                for (var i = 0; i < percentage_fields.length; i++){
+                    console.log(percentage_fields[i]['name']);
+                    if (percentage_fields[i]['type'] == 'hidden'){
+                        continue;
+                    }
+                    
+                    field_rules[percentage_fields[i]['name']] = {
+                        identifier: percentage_fields[i]['name'],
+                        rules: [{
+                            type: 'number', 
+                            prompt: '{name}必须为数字格式'
+                        },{
+                            type: 'PercentageRange[[0,100]]', 
+                            prompt: '{name}只能介于0-100'
+                        }, {
+                            type: 'empty',
+                            prompt: '{name}不能为空'
+                        }]
+                    };
+                }
+                
+                //loop over number_fields and add field validation rules into field_rules
+                for (var i = 0; i < number_fields.length; i++){
+                    console.log(number_fields[i]['name']);
+                    
+                    if (number_fields[i]['type'] == 'hidden'){
+                        continue;
+                    }
+                    
+                    field_rules[number_fields[i]['name']] = {
+                        identifier: number_fields[i]['name'],
+                        rules: [{
+                            type: 'number', 
+                            prompt: '{name}必须为数字格式'
+                        },{
+                            type: 'PercentageRange[[0,100000000000]]', 
+                            prompt: '{name}必须大于等于0'
+                        }, {
+                            type: 'empty',
+                            prompt: '{name}不能为空'
+                        }]
+                    };
+                }     
+                
+                //Besides, we should add another four rules:
+                /*
+                #1: there must be zero every form;
+                #2: every lower must be strictly lower than higher;
+                #3: every number except zero and the highest value must appear exactly twice;
+                #4: the last one, namely the name with zero in it must be the highest value.
+                */
+                //Additional rule #1: lower must be strictly lower than higher
+                var fields_fields = form.getElementsByClassName('fields');
+                //console.log(fields_fields);
+                for (var i = 0; i < fields_fields.length; i++) {
+                    var boxofficeRange_lower = fields_fields[i].getElementsByClassName('boxofficeRange lower');
+                    var boxofficeRange_higher = fields_fields[i].getElementsByClassName('boxofficeRange higher');
+                    var boxofficeRange_highest = fields_fields[i].getElementsByClassName('highest');
+                    
+                    //console.log(boxofficeRange_lower, boxofficeRange_higher);
+                    if (boxofficeRange_lower.length == 1) {
+                        //console.log(boxofficeRange_higher[0].value);
+                        field_rules[boxofficeRange_higher[0]['name']] = {
+                            identifier: boxofficeRange_higher[0]['name'],
+                            rules: [{
+                                type: 'BoxofficeRangeValidate_higher[' + boxofficeRange_lower[0]['name'] + ']',
+                                prompt: '票房范围上限必须大于下限'
+                            }]
+                        };
+                    }
+                    
+                    //for the highest value
+                    if (boxofficeRange_highest.length == 1) {
+                        field_rules[boxofficeRange_highest[0]['name']] = {
+                            identifier: boxofficeRange_highest[0]['name'],
+                            rules: [{
+                                type: 'BoxofficeRangeValidate_highest[' + fields_fields[i]['id'] + ']',
+                                prompt: '最高的票房范围必须大于等于任何一个票房值且票房范围链不能断且不能重复'
+                            }]
+                        };
+                    }
+                
+                }
+                //Additional Rule #2: validate zero and maximum value, see in the segment for the highest value in the above part
+                
+                
+                
+                
+                //console.log(field_rules);
+                return field_rules;
+            }
+            
+            //#step 2: add validation rules into the form
+            function ValidateLadderForms() {
+                //step 1: get all ladder forms
+                var ladder_forms = document.getElementsByClassName('ladder_form');
+                //console.log(ladder_forms);
+                
+                for (var i = 0; i < ladder_forms.length; i++){
+                    $('#' + ladder_forms[i]['id']).form({
+                        on: 'blur',
+                        inline: true,
+                        fields: generateFieldRules_ladder(ladder_forms[i]['id']),
+                    })
+                    ;
+                }
+            }
+            //execute the validation rules
+            ValidateLadderForms();
+            
+            
+            //#step 3: check each of the ladder forms to see if they are true
+            function IsValidLadderForms() {
+                var ladder_forms = document.getElementsByClassName('ladder_form');
+                //console.log(ladder_forms);
+                
+                for (var i = 0; i < ladder_forms.length; i++){
+                    if (!$('#'+ ladder_forms[i]['id']).form('is valid')){
+                        return false;
+                    }
+                }
+                return true;
+            
+            }//end of IsValidLadderForms
+            
+            
+            //generate data for form submission
+            //JSON.stringify({$(this).serializeObject(), })
+            function GenerateFormData(mainForm) {
+                var result = {};
+                
+                result['main'] = mainForm.serializeObject();
+                
+                var ladder_forms = document.getElementsByClassName('ladder_form');
+                //console.log(ladder_forms);
+                
+                for (var i = 0; i < ladder_forms.length; i++){
+                    result[ladder_forms[i]['id']] = $('#'+ ladder_forms[i]['id']).serializeObject();
+                }
+                console.log(JSON.stringify(result));
+                
+                return JSON.stringify(result);
+            }
+            
+            
+            //submit the form
+            $('#return_form').submit(function(event) {
+                event.preventDefault();
+                //hide all the results content
+                document.getElementById('result_content_div').style.display = 'none';
+                
+                if ($(this).form('is valid') && IsValidLadderForms()){ //test if the form passes validation rules
+                    $.ajax({
+                        type : "POST",
+                        url : '/calculatorProcessing',
+                        data: GenerateFormData($(this)),
+                        contentType: 'application/json;charset=UTF-8',
+                        success: function(result) {
+                            //alert('hello');
+                            console.log(result);
+                            //alert("预测保存成功");
+                            
+                            //show all results
+                            document.getElementById('result_content_div').style.display = 'block';
+                            
+                            //get data for graph
+                            var boxoffice_category = [];
+                            var percentage_film = [];
+                            var percentage_wepiao_combined = [];
+                            var percentage_wepiao_investor = [];
+                            var percentage_wepiao_distributor = [];
+                            
+                            for (var i =0; i < result.data.length; i++){
+                                boxoffice_category.push(numeral(result.data[i]['boxoffice']).format('0,0'));
+                                //percentage_film
+                                if (result.data[i]['roi_film_investor'] == 'N/A') {
+                                    percentage_film.push(0);
+                                } else {
+                                    percentage_film.push(result.data[i]['roi_film_investor']);
+                                }
+                                //wepiao_combined
+                                if (result.data[i]['roi_wepiao_combined'] == 'N/A') {
+                                    percentage_wepiao_combined.push(0);
+                                } else {
+                                    percentage_wepiao_combined.push(result.data[i]['roi_wepiao_combined']);
+                                }
+                                //wepiao_investor
+                                if (result.data[i]['roi_wepiao_investor'] == 'N/A') {
+                                    percentage_wepiao_investor.push(0);
+                                } else {
+                                    percentage_wepiao_investor.push(result.data[i]['roi_wepiao_investor']);
+                                }
+                                //wepiao_distributor
+                                if (result.data[i]['roi_wepiao_distributor'] == 'N/A') {
+                                    percentage_wepiao_distributor.push(0);
+                                } else {
+                                    percentage_wepiao_distributor.push(result.data[i]['roi_wepiao_distributor']);
+                                }
+                            }
+                            //console.log(percentage_wepiao);
+                            //console.log(percentage_film);
+
+                            //draw the graph
+                            //$(function () {
+                            $('#graph').highcharts({
+                                chart: {
+                                    type: 'spline'
+                                },
+                                title: {
+                                    text: '回报率vs票房'
+                                },
+                                subtitle: {
+                                    text: 'Source: 微影数据研究院'
+                                },
+                                xAxis: {
+                                    categories: boxoffice_category,
+                                    title: {
+                                        text: '影片票房(万)'
+                                    }
+                                },
+                                yAxis: {
+                                    title: {
+                                        text: '回报率%'
+                                    },
+                                    labels: {
+                                        formatter: function () {
+                                            return this.value + '%';
+                                        }
+                                    }
+                                },
+                                credits: { 
+                                    enabled: false
+                                },
+                                tooltip: {
+                                    crosshairs: true,
+                                    shared: true,
+                                    formatter: function() {
+                                        //console.log(this);
+
+                                        return '票房: ' +  this.x + '<br/>' + '影片投资方: ' + Highcharts.numberFormat(this.points[0].y, 2) + '%<br/>'  + '微影(发行+投资): ' + Highcharts.numberFormat(this.points[1].y, 2) + '%<br/>' + '微影(仅投资): ' + Highcharts.numberFormat(this.points[2].y, 2) + '%<br/>' + '微影(仅发行): ' + Highcharts.numberFormat(this.points[3].y, 2) + '%'        
+                                    }
+
+                                },
+                                legend: {
+                                    layout: 'vertical',
+                                    align: 'right',
+                                    floating: false,
+                                    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+                                    y: -200
+                                },
+                                plotOptions: {
+                                    spline: {
+                                        marker: {
+                                            radius: 2,
+                                            lineColor: '#666666',
+                                            lineWidth: 1
+                                        },
+                                    },
+                                },
+                                series: [{
+                                    name: '影片投资方',
+                                    marker: {
+                                        symbol: 'square'
+                                    },
+                                    data: percentage_film,
+                                    connectNulls: true,
+
+                                }, {
+                                    name: '微影(投资+发行)',
+                                    marker: {
+                                        symbol: 'diamond'
+                                    },
+                                    data: percentage_wepiao_combined,
+                                    connectNulls: true,
+                                },{
+                                    name: '微影(仅投资)',
+                                    marker: {
+                                        symbol: 'diamond'
+                                    },
+                                    data: percentage_wepiao_investor,
+                                    connectNulls: true,
+                                },{
+                                    name: '微影(仅发行)',
+                                    marker: {
+                                        symbol: 'diamond'
+                                    },
+                                    data: percentage_wepiao_distributor,
+                                    connectNulls: true,
+                                },]
+                            });
+                            //});
+
+
+                            //add data into the table
+                            var t = $('#return_table').DataTable();
+
+                            //insert new row or new value
+                            //clear the table
+                            t.clear().draw();
+                            //add row into table
+                            for (var i =0; i < result.data.length; i++){
+                                //roi_film_investor
+                                if (result.data[i]['roi_film_investor'] == 'N/A'){
+                                    var roi_film_investor = 'N/A';
+                                } else {
+                                    var roi_film_investor = numeral(result.data[i]['roi_film_investor']).format('0.2');
+                                }
+                                //roi_wepiao_combined
+                                if (result.data[i]['roi_wepiao_combined'] == 'N/A'){
+                                    var roi_wepiao_combined = 'N/A';
+                                } else {
+                                    var roi_wepiao_combined = numeral(result.data[i]['roi_wepiao_combined']).format('0.2');
+                                }
+                                //roi_wepiao_distributor
+                                if (result.data[i]['roi_wepiao_distributor'] == 'N/A'){
+                                    var roi_wepiao_distributor = 'N/A';
+                                } else {
+                                    var roi_wepiao_distributor = numeral(result.data[i]['roi_wepiao_distributor']).format('0.2');
+                                }
+                                //roi_wepiao_investor
+                                if (result.data[i]['roi_wepiao_investor'] == 'N/A'){
+                                    var roi_wepiao_investor = 'N/A';
+                                } else {
+                                    var roi_wepiao_investor = numeral(result.data[i]['roi_wepiao_investor']).format('0.2');
+                                }
+
+                                
+                                t.row.add([
+                                    numeral(result.data[i]['boxoffice']).format('0,0'), 
+                                    numeral(result.data[i]['boxoffice_net']).format('0,0'), 
+                                    numeral(result.data[i]['depositCost']).format('0,0'), 
+                                    numeral(result.data[i]['issue_income']).format('0,0'), 
+                                    numeral(result.data[i]['proxy_income']).format('0,0'), 
+                                    numeral(result.data[i]['net_issue_income']).format('0,0'), 
+                                    numeral(result.data[i]['propaganda']).format('0,0'), 
+                                    numeral(result.data[i]['production']).format('0,0'), 
+                                    numeral(result.data[i]['profit_film']).format('0,0'), 
+                                    numeral(result.data[i]['casts_profit']).format('0,0'), 
+                                    numeral(result.data[i]['net_profit_film']).format('0,0'), 
+                                    numeral(result.data[i]['copyrightIncome']).format('0,0'), 
+                                    numeral(result.data[i]['total_income_investor']).format('0,0'), 
+                                    numeral(result.data[i]['total_profit_investor']).format('0,0'), 
+                                    roi_film_investor, 
+                                    result.data[i]['blank_1'], 
+                                    numeral(result.data[i]['proxy_income_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['propaganda_income_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['production_income_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['copyrightIncome_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['total_income_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['propaganda_cost_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['production_cost_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['total_cost_wepiao_combined']).format('0,0'), 
+                                    numeral(result.data[i]['profit_wepiao_combined']).format('0,0'), 
+                                    roi_wepiao_combined, 
+                                    result.data[i]['blank_2'], 
+                                    numeral(result.data[i]['proxy_income_wepiao_distributor']).format('0,0'), 
+                                    numeral(result.data[i]['propaganda_income_wepiao_distributor']).format('0,0'), 
+                                    numeral(result.data[i]['total_income_wepiao_distributor']).format('0,0'), 
+                                    numeral(result.data[i]['total_cost_wepiao_distributor']).format('0,0'), 
+                                    numeral(result.data[i]['profit_wepiao_distributor']).format('0,0'), 
+                                    roi_wepiao_distributor, 
+                                    result.data[i]['blank_3'], 
+                                    numeral(result.data[i]['production_income_wepiao_investor']).format('0,0'), 
+                                    numeral(result.data[i]['copyrightIncome_wepiao_investor']).format('0,0'), 
+                                    numeral(result.data[i]['total_income_wepiao_investor']).format('0,0'), 
+                                    numeral(result.data[i]['total_cost_wepiao_investor']).format('0,0'), 
+                                    numeral(result.data[i]['profit_wepiao_investor']).format('0,0'), 
+                                    roi_wepiao_investor
+                                ]).draw( false );
+                                
+                                //adjust column width
+                                //t.columns.adjust().draw();
+                                
+                                //wepiao_combined
+                                if (result.data[i]['boxoffice'] < result['boxoffice_even_combined'] + 0.1 && result.data[i]['boxoffice'] > result['boxoffice_even_combined'] - 0.1){
+                                    //one by one change break-even data
+                                    var break_even_wepiao_combined_array = ['boxoffice_even_wepiao_combined', 'proxyIncome_even_wepiao_combined', 'propagandaIncome_even_wepiao_combined', 'productionIncome_even_wepiao_combined', 'copyrightIncome_even_wepiao_combined', 'totalIncome_even_wepiao_combined', 'propagandaCost_wepiao_even_combined', 'productionCost_wepiao_even_combined', 'totalCost_even_wepiao_combined', 'profit_even_wepiao_combined', 'return_even_wepiao_combined'];
+                                    var break_even_wepiao_combined_list = ['boxoffice', 'proxy_income_wepiao_combined', 'propaganda_income_wepiao_combined', 'production_income_wepiao_combined', 'copyrightIncome_wepiao_combined', 'total_income_wepiao_combined', 'propaganda_cost_wepiao_combined', 'production_cost_wepiao_combined', 'total_cost_wepiao_combined', 'profit_wepiao_combined', 'roi_wepiao_combined'];
+                                    
+                                    for (var j = 0; j < break_even_wepiao_combined_array.length; j++) {
+                                        //console.log(document.getElementById(break_even_wepiao_combined_array[j]));
+                                        document.getElementById(break_even_wepiao_combined_array[j]).innerHTML = '<strong>' + numeral(result.data[i][break_even_wepiao_combined_list[j]]).format('0,.2') + '</strong>';
+                                    }
+                                }
+                                
+                                //wepiao_investor
+                                if (result.data[i]['boxoffice'] < result['boxoffice_even_investor'] + 0.1 && result.data[i]['boxoffice'] > result['boxoffice_even_investor'] - 0.1){
+                                    //one by one change break-even data
+                                    var break_even_wepiao_investor_array = ['boxoffice_even_wepiao_production', 'productionIncome_even_wepiao_production', 'copyrightIncome_even_wepiao_production', 'totalIncome_even_wepiao_production', 'productionCost_even_wepiao_production', 'profit_even_wepiao_production', 'return_even_wepiao_production'];
+                                    var break_even_wepiao_investor_list = ['boxoffice', 'production_income_wepiao_investor', 'copyrightIncome_wepiao_investor', 'total_income_wepiao_investor', 'total_cost_wepiao_investor', 'profit_wepiao_investor', 'roi_wepiao_investor'];
+                                    
+                                    for (var j = 0; j < break_even_wepiao_investor_array.length; j++) {
+                                        //console.log(document.getElementById(break_even_wepiao_investor_array[j]));
+                                        document.getElementById(break_even_wepiao_investor_array[j]).innerHTML = '<strong>' + numeral(result.data[i][break_even_wepiao_investor_list[j]]).format('0,.2') + '</strong>';
+                                    }
+                                }
+                                                                                                                                                     
+                                //wepiao_distributor
+                                if (result.data[i]['boxoffice'] < result['boxoffice_even_distributor'] + 0.1 && result.data[i]['boxoffice'] > result['boxoffice_even_distributor'] - 0.1){
+                                    //one by one change break-even data
+                                    var break_even_wepiao_distributor_array = ['boxoffice_even_wepiao_propaganda', 'proxyIncome_even_wepiao_propaganda', 'propagandaIncome_even_wepiao_propaganda', 'totalIncome_even_wepiao_propaganda', 'propagandaCost_even_wepiao_propaganda', 'profit_even_wepiao_propaganda', 'return_even_wepiao_propaganda'];
+                                    var break_even_wepiao_distributor_list = ['boxoffice', 'proxy_income_wepiao_distributor', 'propaganda_income_wepiao_distributor', 'total_income_wepiao_distributor', 'total_cost_wepiao_distributor', 'profit_wepiao_distributor', 'roi_wepiao_distributor'];
+                                    
+                                    for (var j = 0; j < break_even_wepiao_distributor_array.length; j++) {
+                                        document.getElementById(break_even_wepiao_distributor_array[j]).innerHTML = '<strong>' + numeral(result.data[i][break_even_wepiao_distributor_list[j]]).format('0,.2') + '</strong>';
+                                    }
+                                }
+
+                                //set download button
+                                document.getElementById('exportCalculator')['href'] = result['filename'];
+                                $('#exportCalculator_button').removeClass('disabled');
+
+                            }
+                        },
+                        error: function(result) {
+                            console.log(JSON.parse(result.responseText));
+                            alert("计算失败,请联系管理员zhaoyi@wepiao.com.");
+                        }
+                    });
+                }
+                else if ($(this).form('is valid')){
+                    alert('阶梯表中有错误');
+                    ShowLadderModal();
+                } 
+                else {
+                    console.log('主表验证失败!');
+                }
+            });
+            
+            
+            //function to show modal
+            function ShowLadderModal() {
+                $('.ui.ladder.modal').modal('setting', {
+                    closable: false,
+                    onApprove: function () {
+                        return false;
+                    }
+                }).modal('show');
+            }
+            
+            
+            //LadderDynamic_boxofficePercentage
+            function LadderDynamic_boxofficePercentage(anchor, name, num_id, new_id_name, class_type) {
+                //get the current number, boxPercentage_ladder_number
+                var num = JSON.parse(document.getElementById(num_id).value);
+                //alert(num);
+                document.getElementById(num_id).value = num + 1;
+                
+                //mark the name and id explicitly
+                var id_name_input = new_id_name + '_' + (num + 1);
+                
+                //add div of inputs for boxofficePercentage_dynamic
+                $('#' + anchor).after('<div class="fields" id="' + id_name_input + '"><div class="field"><label>票房下限(单位：万)</label><input type="text" value="0" class="number boxofficeRange lower" name="input_low_' + id_name_input + '"></div><div class="field"><label>票房上限(单位：万)</label><input type="text" value="0" class="number boxofficeRange higher" name="input_high_' + id_name_input + '"></div><div class="field"><label>' + name + '</label><input type="text" value="0" class="' + class_type + '" name="input_interested_' + id_name_input + '"></div><div class="two wide field"><label>&nbsp;</label><div class="ui icon button" type="button" onclick="$(this).parent().parent().remove();"><i class=" red minus circle icon" ></i></div></div></div>');
+                
+                //refresh the modal in order to readjust the modal to whole page
+                $('.ui.ladder.modal').modal('refresh');
+                
+                //add validation rule
+                ValidateLadderForms();
+            }
+        </script>
+    </body>
+</html>
